@@ -1,0 +1,40 @@
+---
+- name: Change hostname to worker
+  hosts: 10.10.10.21
+  become: yes
+
+  tasks:
+    - name: Set hostname to worker
+      command: hostnamectl set-hostname worker
+
+- name: Install Docker
+  hosts: 10.10.10.21
+  become: true
+
+  tasks:
+    - name: Install required packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+
+    - name: Add Docker repository
+      command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+    - name: Enable Docker nightly repository
+      command: yum-config-manager --enable docker-ce-nightly
+
+    - name: Enable Docker test repository
+      command: yum-config-manager --enable docker-ce-test
+
+    - name: Install Docker
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
